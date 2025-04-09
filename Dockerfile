@@ -1,96 +1,70 @@
-# Dockerfile
+# Dockerfile v5
 
-# 1. Base Image
+# 1. Base Image for all stages
 FROM node:20-alpine AS base
-
-# Set working directory
-WORKDIR /app
-
-# Install pnpm globally
 RUN npm install -g pnpm
 
 # ------------------------------------
 
-# 2. Dependencies Stage
+# 2. Dependencies Stage ('deps')
+# Installs *only* production dependencies
 FROM base AS deps
-
-# Copy only the web app's dependency files
-COPY apps/web/package.json apps/web/pnpm-lock.yaml ./apps/web/
-
-# Change working directory to the web app
-WORKDIR /app/apps/web
-
-# Install only production dependencies for the web app
+WORKDIR /app
+# Copy package files from the web app folder into the current WORKDIR (/app)
+COPY apps/web/package.json apps/web/pnpm-lock.yaml ./
+# Install production dependencies in /app
 RUN pnpm install --prod
 
-# ------------------------------------
+# -------------------------------------
 
-# 3. Build Stage
-FROM base AS build
-WORKDIR /app # Back to the root for copying source
-
-# Copy web app dependency files again
-COPY apps/web/package.json apps/web/pnpm-lock.yaml ./apps/web/
-
-# Copy installed production dependencies from the 'deps' stage
-COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
-
-# Copy the rest of the source code for the web app
-COPY apps/web ./apps/web
-# Copy any root files needed by the build (e.g., tsconfig.base.json if it existed)
+# 3. Builder Stage ('builder')
+# Builds the application
+FROM base AS builder
+WORKDIR /app
+# Copy package files again to /app
+COPY apps/web/package.json apps/web/pnpm-lock.yaml ./
+# Copy production dependencies installed in the 'deps' stage from /app/node_modules to /app/node_modules
+COPY --from=deps /app/node_modules ./node_modules
+# Install *all* dependencies (including dev) in /app
+RUN pnpm install
+# Copy the application source code from apps/web in context to /app in image
+# This comes AFTER install to not invalidate dependency cache on code change
+COPY apps/web ./
+# Copy any root config files if they exist and are needed
 # COPY tsconfig.base.json ./
 
-# Change working directory to the web app
-WORKDIR /app/apps/web
-
-# Install ALL dependencies (including devDeps like drizzle-kit, typescript, etc.) needed for build and migration
-RUN pnpm install
-
-# Build the Next.js application
+# Build the application (runs in /app)
 RUN pnpm build
-
-# Prune dev dependencies after build (optional, saves some space)
+# Prune dev dependencies after build (runs in /app)
 RUN pnpm prune --prod
 
-# ------------------------------------
+# -------------------------------------
 
-# 4. Runner Stage
+# 4. Runner Stage ('runner')
+# Minimal image to run the application
 FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Create a non-root user and group
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Change owner early, before copying
 USER nextjs
 
-WORKDIR /app/apps/web # Set workdir before copying to it
+# Copy application artifacts from builder stage (/app) to runner stage (/app)
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./ 
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy necessary artifacts from the build stage
-COPY --from=build --chown=nextjs:nodejs /app/apps/web/.next/standalone ./ # Copy standalone output to current WORKDIR
-COPY --from=build --chown=nextjs:nodejs /app/apps/web/public ./public # Copy public dir
-COPY --from=build --chown=nextjs:nodejs /app/apps/web/.next/static ./.next/static # Copy static dir
+# Copy files needed for migrations from builder stage (/app)
+COPY --from=builder --chown=nextjs:nodejs /app/package.json ./ 
+COPY --from=builder --chown=nextjs:nodejs /app/pnpm-lock.yaml ./ 
+COPY --from=builder --chown=nextjs:nodejs /app/drizzle.config.ts ./ 
+COPY --from=builder --chown=nextjs:nodejs /app/drizzle ./drizzle 
+# Copy final production node_modules from builder stage (/app)
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules 
 
-# Copy files needed for migration at runtime
-COPY --from=build --chown=nextjs:nodejs /app/apps/web/package.json ./ 
-COPY --from=build --chown=nextjs:nodejs /app/apps/web/pnpm-lock.yaml ./ 
-COPY --from=build --chown=nextjs:nodejs /app/apps/web/drizzle.config.ts ./ 
-COPY --from=build --chown=nextjs:nodejs /app/apps/web/drizzle ./drizzle 
-
-# Copy production node_modules needed for running drizzle-kit migrate
-COPY --from=build --chown=nextjs:nodejs /app/apps/web/node_modules ./node_modules 
-
-# Adjust permissions for the non-root user
-# Ensure the nextjs user owns the necessary files
-# This might need adjustment depending on final file structure
-RUN chown -R nextjs:nodejs /app
-
-# Expose the port the app runs on
 EXPOSE 3000
 
-# Command to run migrations and then start the server
-# Ensure DATABASE_URL is available in the environment
 CMD ["sh", "-c", "pnpm exec drizzle-kit migrate && node server.js"] 
