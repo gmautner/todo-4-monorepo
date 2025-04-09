@@ -1,0 +1,68 @@
+## Documentation
+
+- Keep a high level features list and checkboxes to track progress
+- Create a changelog for each accomplished task. Update the changelog frequently when done with meaningful units of work.
+
+## Tooling
+
+Use the following tools to help you build the product:
+
+- Next.js
+- NextAuth.js (if authentication is needed) with TypeScript
+- Shadcn UI, always with Light/Dark/System themes
+- Drizzle ORM
+- Tailwind CSS
+- Postgres based database
+
+Use `pnpm` as package manager. Be careful, when running `pnpm dev`, to run it in the right directory.
+
+## Repository structure
+
+- Each application should have its own folder, under the `apps` folder. If there is only one application, its folder should be named `web`.
+- The documentation including the feature list and changelog should be under the `docs` folder. Keep a `README.md` file at the root of the repository to help users set up the project.
+- The repo should include the root folder, and be structured such that other tools such as Coolify will access it for deployment directly from the `Dockerfile`, and also the docs should be accessible such that the development flow can be continued from other computers.
+  
+## Deployment
+
+- Bundle the app within a standalone Docker container.
+- The connection to the database should be configured using the environment variable `DATABASE_URL`.
+- Modify the `CMD` in the Dockerfile to execute `pnpm exec drizzle-kit migrate` before running `node server.js`. This ensures that the database is always up to date with the expected schema.
+
+## Database
+
+- For local development:
+  - Launch a Postgres server using Docker command line in the Terminal. Use a random port number for the Postgres server.
+  - Create a file with the corresponding `DATABASE_URL` environment variable
+  - Run database migrations locally
+- For deployment:
+  - Ensure the application reads the `DATABASE_URL` environment variable to connect to the database
+  - Ensure the Dockerfile includes the migration step in the proper sequence. The migrations should always be executed in the container launch, before running the application, without depending on CI pipelines.
+
+## Principles
+
+- Code readability and maintainability
+- Avoid, as much as possible, deviating from conventions. Try to leave the codebase, dockerfile, configuration files, etc. as close as possible to defaults and widespread practices.
+- Smart looking interface, but minimizing the amount of code. Leverage shadcn to achieve this.
+
+## Workflow
+
+### Chat
+
+- Talk to the user in the language of the user.
+- Implement the UI using the language the user uses to talk to you.
+- When being asked to implement features, ask these follow-up questions to refine requirements if not already provided (in the language of the user):
+  - Do you need multi-user and authentication?
+  - Is a dashboard needed?
+  - Is there a need for a mobile version?
+  - Does the app need to be multi-language?
+- Also, when being asked to implement features, additionally to the above questions, ask between 3 and 6 follow-up questions to refine requirements, in the context of the application's domain. For example, if the user asks for a To Do application, ask:
+  - Do you need a priority level?
+  - Do you need a due date?
+  - Do you need project labels?
+  - Do you want to keep completed tasks available and deletable? etc.
+
+### Terminal and tool use
+
+- Iterate as much as possible using the Playwright MCP tool for browser testing. Don't ask the user to run the tests, just run them using the tool and terminal commands.
+- When issuing terminal commands, use "ci mode" as much as possible, meaning, avoid prompts and confirmations. When that's not possible, wait for the user to enter the needed inputs and check for proper completion before proceeding further. Use `--yes` flags for `create-next-app`.
+- Pay attention to commands that depend on the user's input. Wait for completion by asking the user for confirmation before proceeding with next steps.

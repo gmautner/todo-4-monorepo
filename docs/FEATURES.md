@@ -1,0 +1,23 @@
+# Funcionalidades
+
+- [ ] Dashboard com resumo das tarefas
+- [ ] Criação de Tarefas
+    - [ ] Título
+    - [ ] Descrição (opcional)
+    - [ ] Prioridade (Alta, Média, Baixa)
+    - [ ] Data de Vencimento
+    - [ ] Tags (múltiplas)
+- [ ] Visualização de Tarefas
+    - [ ] Listagem de todas as tarefas
+    - [ ] Filtragem por status (pendente/concluída)
+    - [ ] Filtragem por prioridade
+    - [ ] Filtragem por data de vencimento
+    - [ ] Filtragem por tag
+    - [ ] Ordenação (prioridade, data de vencimento, data de criação)
+- [ ] Edição de Tarefas
+- [ ] Marcar Tarefa como Concluída (tarefa fica riscada)
+- [ ] Exclusão de Tarefas (concluídas ou pendentes)
+- [ ] Design Responsivo (Desktop, Tablet, Mobile)
+- [ ] Tema Claro/Escuro/Sistema
+- [ ] Persistência de dados em banco de dados Postgres
+- [ ] Deploy com Docker 
