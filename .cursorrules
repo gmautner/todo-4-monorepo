@@ -18,9 +18,11 @@ Use `pnpm` as package manager. Be careful, when running `pnpm dev`, to run it in
 
 ## Repository structure
 
-- Each application should have its own folder, under the `apps` folder. If there is only one application, its folder should be named `web`.
-- The documentation including the feature list and changelog should be under the `docs` folder. Keep a `README.md` file at the root of the repository to help users set up the project.
-- The repo should include the root folder, and be structured such that other tools such as Coolify will access it for deployment directly from the `Dockerfile`, and also the docs should be accessible such that the development flow can be continued from other computers.
+- Each application should have its own folder, under the `apps` folder. If there is only one application, its folder should be named `web`. Create a separate git repository for each application.
+- The `Dockerfile` for each application should be located in the application's folder.
+- Create another git repository for the root folder, that will include the docs natively, plus each of the apps under the `apps` folder as a submodule.
+- Keep a `README.md` file at the root of the repository to help users set up the project.
+- You should automatically create the GitHub remotes for each of the above repositories using the `gh` CLI.
   
 ## Deployment
 
