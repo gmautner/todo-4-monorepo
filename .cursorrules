@@ -1,6 +1,6 @@
 ## Documentation
 
-- Keep a high level features list and checkboxes to track progress
+- Keep a high level features list and checkboxes to track progress. Update checkboxes accordingly when commiting new features.
 - Create a changelog for each accomplished task. Update the changelog frequently when done with meaningful units of work.
 
 ## Tooling
