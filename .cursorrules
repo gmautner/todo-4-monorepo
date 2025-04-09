@@ -29,7 +29,7 @@ Use `pnpm` as package manager. Be careful, when running `pnpm dev`, to run it in
 
 - Bundle the app within a standalone Docker container.
 - The connection to the database should be configured using the environment variable `DATABASE_URL`.
-- Modify the `CMD` in the Dockerfile to execute `pnpm exec drizzle-kit migrate` before running `node server.js`. This ensures that the database is always up to date with the expected schema. Since you're going to need to run migrations on the database, avoid running `RUN pnpm prune --prod` to prevent deletion of the `drizzle-kit` package.
+- Modify the `CMD` in the Dockerfile to execute `pnpm exec drizzle-kit migrate` before running `node server.js`. This ensures that the database is always up to date with the expected schema. Since you're going to need to run migrations on the database, avoid running `RUN pnpm prune --prod` to prevent deletion of the `drizzle-kit` package. Make sure other tools such as `pnpm` are also installed in the container.
 
 ## Database
 
