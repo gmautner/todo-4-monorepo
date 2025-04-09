@@ -21,14 +21,15 @@ Use `pnpm` as package manager. Be careful, when running `pnpm dev`, to run it in
 - Each application should have its own folder, under the `apps` folder. If there is only one application, its folder should be named `web`. Create a separate git repository for each application.
 - The `Dockerfile` for each application should be located in the application's folder.
 - Create another git repository for the root folder, that will include the docs natively, plus each of the apps under the `apps` folder as a submodule.
+- When the commits are pushed in the submodules, the root repository should be updated to reflect the changes and also commited.
 - Keep a `README.md` file at the root of the repository to help users set up the project.
-- You should automatically create the GitHub remotes for each of the above repositories using the `gh` CLI.
+- You should automatically create the GitHub remotes for each of the above repositories using the `gh` CLI, and push the commits to the remotes automatically.
   
 ## Deployment
 
 - Bundle the app within a standalone Docker container.
 - The connection to the database should be configured using the environment variable `DATABASE_URL`.
-- Modify the `CMD` in the Dockerfile to execute `pnpm exec drizzle-kit migrate` before running `node server.js`. This ensures that the database is always up to date with the expected schema.
+- Modify the `CMD` in the Dockerfile to execute `pnpm exec drizzle-kit migrate` before running `node server.js`. This ensures that the database is always up to date with the expected schema. Since you're going to need to run migrations on the database, avoid running `RUN pnpm prune --prod` to prevent deletion of the `drizzle-kit` package.
 
 ## Database
 
