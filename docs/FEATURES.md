@@ -18,6 +18,6 @@
 - [ ] Marcar Tarefa como Concluída (tarefa fica riscada)
 - [ ] Exclusão de Tarefas (concluídas ou pendentes)
 - [ ] Design Responsivo (Desktop, Tablet, Mobile)
-- [ ] Tema Claro/Escuro/Sistema
-- [ ] Persistência de dados em banco de dados Postgres
-- [ ] Deploy com Docker 
+- [x] Tema Claro/Escuro/Sistema
+- [x] Persistência de dados em banco de dados Postgres
+- [x] Deploy com Docker 
